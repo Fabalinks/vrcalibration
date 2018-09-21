@@ -18,7 +18,7 @@ def get_screen(idx):
 #gettign positions of rigib bodies in real time
 client = NatClient()
 arena_rb = client.rigid_bodies['Arena']
-rat_rb = client.rigid_bodies['Gerbil']
+rat_rb = client.rigid_bodies['Rat']
 
 
 window = pyglet.window.Window(resizable=True, fullscreen=True, screen=get_screen(1))  # Opening the basic pyglet window
