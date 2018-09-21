@@ -37,15 +37,24 @@ projector.projection = rc.PerspectiveProjection(fov_y =41.5, aspect=1.777777778)
 light = rc.Light(position=projector.position)
 
 ## Make Virtual Scene ##
-obj_reader = rc.WavefrontReader(rc.resources.obj_primitives)   # adding a monkey to the FBO scene
-monkey = obj_reader.get_mesh("Monkey", position=(0, 0, 0), scale=.8)
-rat_camera = rc.Camera(projection=rc.PerspectiveProjection(aspect=1, fov_y=90), position=rat_rb.position)  # settign the camera to be on top of the rats head
-virtual_scene = rc.Scene(meshes=[monkey], light=light, camera=rat_camera, bgColor=(0, 0, 255))  # seetign aset virtual scene to be projected as the mesh of the arena
+virtual_arena = arena_reader.get_mesh('Arena')
+wall = arena_reader.get_mesh("Plane")
+wall.parent = virtual_arena
+rat_camera = rc.Camera(projection=rc.PerspectiveProjection(aspect=1, fov_y=90, z_near=.001), position=rat_rb.position)  # settign the camera to be on top of the rats head
+virtual_scene = rc.Scene(meshes=[wall, virtual_arena], light=light, camera=rat_camera, bgColor=(0, 0, 255))  # seetign aset virtual scene to be projected as the mesh of the arena
+virtual_scene.gl_states.states = virtual_scene.gl_states.states[:-1]
+
+checkerboard_texture = rc.Texture.from_image(rc.resources.img_uvgrid)  # or 'assets/wood.jpg'
+wall.textures.append(checkerboard_texture)
+virtual_arena.textures.append(checkerboard_texture)
+virtual_arena.uniforms['flat_shading'] = True
+wall.uniforms['flat_shading'] = True
+
 
 
 ## Make Cubemapping work on arena
-cube_texture = rc.TextureCube()  # usign cube mapping to import eh image on the texture of the arena
-framebuffer = rc.FBO(texture=cube_texture) ## creating a framebuffer as the texture - in tut 4 it was the blue screen
+cube_texture = rc.TextureCube(width=4096, height=4096)  # usign cube mapping to import eh image on the texture of the arena
+framebuffer = rc.FBO(texture=cube_texture) ## creating a fr`amebuffer as the texture - in tut 4 it was the blue screen
 arena.textures.append(cube_texture)
 
 
@@ -55,6 +64,7 @@ def update(dt):
     rat_camera.position = rat_rb.position  # setting the actual osiont of the rat camera to vbe of the rat position
     arena.uniforms['playerPos'] = rat_rb.position
     arena.position, arena.rotation.xyzw = arena_rb.position, arena_rb.quaternion
+    virtual_arena.position, virtual_arena.rotation = arena.position, arena.rotation
 pyglet.clock.schedule(update)  # making it so that the app updates in real time
 
 
